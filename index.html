@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JSON Schema Builder</title>
+    <meta
+      name="description"
+      content="Generate JSON Schema from sample JSON data in the browser."
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero">
+        <p class="hero-kicker">Developer Tool / Schema Generator</p>
+        <h1>JSON Schema Builder</h1>
+        <p>
+          Paste sample JSON, generate a clean JSON Schema, analyze fields, and
+          export the result as a ready-to-use schema file.
+        </p>
+      </section>
+
+      <section class="row g-4">
+        <div class="col-lg-6">
+          <section class="panel">
+            <h2 class="panel-title"><span>JS</span> JSON Input</h2>
+
+            <label class="form-label" for="jsonInput">Sample JSON</label>
+            <textarea
+              class="form-control"
+              id="jsonInput"
+              spellcheck="false"
+              placeholder='{
+  "name": "Ali",
+  "age": 20
+}'
+            ></textarea>
+
+            <div class="toolbar mt-3">
+              <button class="btn btn-primary" id="generateBtn" type="button">
+                Generate Schema
+              </button>
+              <button class="btn btn-outline-info" id="sampleBtn" type="button">
+                Load Sample JSON
+              </button>
+              <button
+                class="btn btn-outline-light"
+                id="formatBtn"
+                type="button"
+              >
+                Format JSON
+              </button>
+              <button
+                class="btn btn-outline-info"
+                id="copyInputBtn"
+                type="button"
+              >
+                Copy Input JSON
+              </button>
+              <button
+                class="btn btn-outline-danger"
+                id="clearBtn"
+                type="button"
+              >
+                Clear
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-lg-6">
+          <section class="panel">
+            <h2 class="panel-title"><span>OP</span> Schema Options</h2>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="option-card">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="includeRequired"
+                    checked
+                  />
+                  <span>Include required fields</span>
+                </label>
+              </div>
+
+              <div class="col-md-6">
+                <label class="option-card">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="includeExamples"
+                    checked
+                  />
+                  <span>Include examples</span>
+                </label>
+              </div>
+
+              <div class="col-md-6">
+                <label class="option-card">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="includeDescriptions"
+                  />
+                  <span>Include descriptions</span>
+                </label>
+              </div>
+
+              <div class="col-md-6">
+                <label class="option-card">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="detectNullable"
+                    checked
+                  />
+                  <span>Detect nullable values</span>
+                </label>
+              </div>
+
+              <div class="col-md-6">
+                <label class="option-card">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="strictArrayItems"
+                    checked
+                  />
+                  <span>Strict array item detection</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel section-gap">
+            <h2 class="panel-title"><span>UP</span> File Import</h2>
+            <label class="form-label" for="jsonFileInput"
+              >Import .json file</label
+            >
+            <input
+              class="form-control"
+              id="jsonFileInput"
+              type="file"
+              accept=".json,application/json"
+            />
+            <p class="helper-text mt-2 mb-0">
+              Imported JSON will be placed into the editor automatically.
+            </p>
+          </section>
+
+          <section class="panel section-gap">
+            <h2 class="panel-title"><span>IN</span> Status</h2>
+            <div
+              class="status-message"
+              id="statusMessage"
+              role="status"
+              aria-live="polite"
+            >
+              Ready for JSON input.
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel section-gap">
+        <h2 class="panel-title"><span>ST</span> Stats</h2>
+
+        <div class="stats-grid">
+          <div class="stat-pill">
+            <span>Root Type</span>
+            <strong id="rootTypeStat">-</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Total Fields</span>
+            <strong id="totalFieldsStat">0</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Nested Objects</span>
+            <strong id="nestedObjectsStat">0</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Arrays Found</span>
+            <strong id="arraysFoundStat">0</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Max Depth</span>
+            <strong id="maxDepthStat">0</strong>
+          </div>
+          <div class="stat-pill">
+            <span>Schema Size</span>
+            <strong id="schemaSizeStat">0 B</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="row g-4 section-gap">
+        <div class="col-xl-7">
+          <section class="panel">
+            <div class="panel-header">
+              <h2 class="panel-title mb-0"><span>SC</span> Generated Schema</h2>
+              <div class="toolbar">
+                <button
+                  class="btn btn-outline-info"
+                  id="copySchemaBtn"
+                  type="button"
+                >
+                  Copy Schema
+                </button>
+                <button
+                  class="btn btn-outline-warning"
+                  id="downloadSchemaBtn"
+                  type="button"
+                >
+                  Download Schema JSON
+                </button>
+              </div>
+            </div>
+
+            <pre
+              class="preview-panel"
+            ><code id="schemaPreview">Generate a schema to preview JSON Schema output here.</code></pre>
+          </section>
+        </div>
+
+        <div class="col-xl-5">
+          <section class="panel">
+            <h2 class="panel-title"><span>FA</span> Field Analysis</h2>
+
+            <label class="form-label" for="fieldSearch"
+              >Search schema paths</label
+            >
+            <input
+              class="form-control mb-3"
+              id="fieldSearch"
+              type="search"
+              placeholder="Filter by path, type, required, or example"
+            />
+
+            <div class="table-wrap">
+              <table class="table table-dark table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>Path</th>
+                    <th>Type</th>
+                    <th>Required</th>
+                    <th>Example</th>
+                    <th>Depth</th>
+                  </tr>
+                </thead>
+                <tbody id="fieldTableBody">
+                  <tr>
+                    <td colspan="5">
+                      <div class="empty-state">
+                        Generate a schema to inspect discovered fields.
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel section-gap">
+        <h2 class="panel-title"><span>EX</span> Export</h2>
+        <p class="helper-text">
+          Copy the generated schema or download it as
+          <strong>schema.json</strong>.
+        </p>
+
+        <div class="toolbar">
+          <button
+            class="btn btn-outline-info"
+            id="copySchemaExportBtn"
+            type="button"
+          >
+            Copy Schema
+          </button>
+          <button
+            class="btn btn-outline-warning"
+            id="downloadSchemaExportBtn"
+            type="button"
+          >
+            Download Schema JSON
+          </button>
+        </div>
+      </section>
+
+      <footer class="footer-note">
+        JSON Schema Builder / Browser-only / No build tools
+      </footer>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
