@@ -310,12 +310,15 @@ function renderSchemaPreview(schema) {
  * @param {Array<Object>} rows - Rows to display.
  * @returns {void}
  */
-function renderFieldAnalysis(rows) {
+function renderFieldAnalysis(rows, isFiltered = false) {
     if (rows.length === 0) {
+        const message = isFiltered
+            ? "No fields match your search."
+            : "Generate a schema to inspect discovered fields.";
         fieldTableBody.innerHTML = `
       <tr>
         <td colspan="5">
-          <div class="empty-state">Generate a schema to inspect discovered fields.</div>
+          <div class="empty-state">${message}</div>
         </td>
       </tr>
     `;
@@ -377,7 +380,7 @@ function filterFieldAnalysis(term) {
         })
         : [...fieldAnalysis];
 
-    renderFieldAnalysis(filteredFieldAnalysis);
+    renderFieldAnalysis(filteredFieldAnalysis, Boolean(normalizedTerm));
 }
 
 /**
